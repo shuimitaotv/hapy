@@ -1,0 +1,5 @@
+/result
+/iniFile/config.ini
+/*.txt
+/*.zip
+__pycache__
