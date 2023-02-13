@@ -14,7 +14,7 @@ def _init():
 
     usage = '\n\t' \
             'python3 %prog -d domain.com\n\t' \
-            'python3 %prog --domainFile domain.txt\n\t'
+            'python3 %prog -f domain.txt\n\t'
 
     parse = OptionParser(usage=usage)
     parse.add_option('-d', '--domain', dest='domain', type='str', help='target domain')
