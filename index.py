@@ -1,5 +1,5 @@
 from optparse import OptionParser
-from lib.core.saveToExcel import saveToExcel
+from lib.core.saveToFile import saveToFile
 import os
 import urllib3
 import re 
@@ -48,14 +48,16 @@ def _init():
         
 def expDomain(domain):
 
-    excel = openpyxl.Workbook()
-    excel.remove(excel[excel.sheetnames[0]])  # 删除第一个默认的表
-    dmoainExcelSavePath='{}/{}.xlsx'.format(output, domain)
+    dmoainExcelSavePath='{}/{}'.format(output, domain)
     
     # 判断域名是否已扫过
     if  os.path.exists(dmoainExcelSavePath) and not overwrite:
         cprint('[域名文件已存在] :{}'.format(domain), 'red')
         return 
+    elif os.path.exists(dmoainExcelSavePath) and overwrite:
+        os.unlink(dmoainExcelSavePath)
+    
+    File = saveToFile(dmoainExcelSavePath)
 
     # 判断是否是泛解析
     isPanAnalysis = checkPanAnalysis(domain)
@@ -82,23 +84,21 @@ def expDomain(domain):
     subdomains = printGetNewSubdomains(subdomains, [domain])
 
     # 保存子域名
-    paramHtLinksSheet = saveToExcel(dmoainExcelSavePath, excel, '子域名')
-    paramHtLinksSheet.save(subdomains,["子域名"])
+    File.add('子域名')
+    File.add(subdomains)
 
     # 保存后台地址
-    htSheet = saveToExcel(dmoainExcelSavePath, excel, '后台')
-    htSheet.setTitle(["子域名","地址","标题"])
+    File.add('|'.join(["后台","标题"]))
     allParamLinks={}
     for _domain in subdomains:
-        paramLinks,htLinks= run_ParamLinks(_domain,htSheet)
+        paramLinks,htLinks= run_ParamLinks(_domain,File)
         allParamLinks[_domain]=paramLinks
 
     #保存SQL注入
-    sqlSheet = saveToExcel(dmoainExcelSavePath, excel, 'SQL注入')
-    sqlSheet.setTitle(["子域名","漏洞类型","注入点","准确度"])
+    File.add('|'.join(["漏洞类型","准确度","注入点"]))
     for _domain in subdomains:
         if(len(allParamLinks[_domain])>0):
-            run_SqlProbe(allParamLinks[_domain],sqlSheet) 
+            run_SqlProbe(allParamLinks[_domain],File) 
     
 # 获取主域名
 def get_main_domain(url):
@@ -136,17 +136,16 @@ def printGetNewSubdomains(old_subdomains, new_subdomains):
     return list(set(new_subdomains + old_subdomains))
 
 # 获取域名的参数链接和后台链接（存活）
-def run_ParamLinks(domain,sheet):
+def run_ParamLinks(domain,file):
     cprint('-' * 50 + 'run_ParamLinks: ' + domain + '-' * 50, 'green')  # 启动网络空间引擎
     from lib.core.paramSpider.paramSpider import getParamLinks
     paramLinks,htLinks=getParamLinks(domain)
     for htLink in htLinks:
-        htLink.insert(0,domain)
-        sheet.add([htLink])
+        file.add([htLink])
     return paramLinks,htLinks
 
 # 获取域名的SQL注入点（存活）
-def run_SqlProbe(links,sheet):
+def run_SqlProbe(links,file):
     cprint('-' * 50 + 'run_SqlProbe: ' + '-' * 50, 'green')
     from lib.exp.SQL.sqlProbe import detect 
     sqlProbe=detect(links)
@@ -156,13 +155,12 @@ def run_SqlProbe(links,sheet):
         _sql=[]
         parsed_url = urllib3.util.parse_url(_sqlLinks[1])
         _sql.append(_sqlLinks[0])
-        _sql.append(parsed_url.netloc + parsed_url.path)
         _sql.append(_sqlLinks[2])
+        _sql.append(parsed_url.netloc + parsed_url.path)
         if _sql not in _allsql:
             _allsql.append(_sql)
-            _sqlLinks.insert(0, parsed_url.netloc)
             sql.append(_sqlLinks)
-    sheet.add(sql)
+    file.add(sql)
 
     return sqlProbe
 

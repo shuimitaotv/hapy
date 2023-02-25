@@ -105,14 +105,14 @@ class SQLInject(threading.Thread):
                     tqdm.write(Fore.RED + '[SQL TIME] {}'.format(url_timeout_10))
                     self.vul_list.append(['SQL TIME', url_timeout_10, 'Yes TIMEOUT:{}'.format(cost_timeout_10)])
                     isTimeSql, regexp_ret = True, None
-                else:
-                    tqdm.write(Fore.WHITE + '[SQL TIME] {}'.format(url_timeout_10))
-                    self.vul_list.append(['SQL TIME', url_timeout_10, 'Maybe'])
-                    isTimeSql, regexp_ret = False, None
-            else:
-                tqdm.write(Fore.WHITE + '[SQL TIME] {}'.format(url_timeout_0))
-                self.vul_list.append(['SQL TIME', url_timeout_0, 'Maybe'])
-                isTimeSql, regexp_ret = False, None
+                # else:
+                #     tqdm.write(Fore.WHITE + '[SQL TIME] {}'.format(url_timeout_10))
+                #     self.vul_list.append(['SQL TIME', url_timeout_10, 'Maybe'])
+                #     isTimeSql, regexp_ret = False, None
+            # else:
+            #     tqdm.write(Fore.WHITE + '[SQL TIME] {}'.format(url_timeout_0))
+            #     self.vul_list.append(['SQL TIME', url_timeout_0, 'Maybe'])
+            #     isTimeSql, regexp_ret = False, None
         elif alive_flag:
             isErrorSql, dbms, regexp_ret = self.checkErrorSQL(res_timeout_8.text)
             if isErrorSql:

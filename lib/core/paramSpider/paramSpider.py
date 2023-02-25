@@ -80,7 +80,7 @@ def getLinks(domain):
             paramName.sort()                            # 排序
             if paramName not in allParamNames:
                 allParamNames.append(paramName)
-                _,sub=os.path.splitext(url)
+                _,sub=os.path.splitext(parsed_url.path)
                 if not (sub is not None and sub in black_ext):
                     paramLinks.append(link)
 
